@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('node.js Deps') {
+            steps {
+                sh'npm isntall'
+            }
+        }
+
+        stage('E2E Tests') {
+            steps {
+                sh 'npx playwrigth test'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Publicando versão no ambiente de QA'
+            }
+        }
+
+       
+    }
+}
