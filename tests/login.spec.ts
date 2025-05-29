@@ -16,16 +16,19 @@ test('test', async ({ page }) => {
   }
 
   await cleanJobs() // limpa tudo
+
  await loginPage.acessarPagina()
  await loginPage.informaCpf(usuario.cpf)
  await loginPage.preencheSenha(usuario.senha)
   
-const code = await obterCodigo2FA(usuario.cpf)// banco de dados
 
-await page.getByRole('heading', {name:'Verificação em duas etapas'}).waitFor({timeout:5000}) //vai ter até 3 segundo para ir pro proximo passo
-//const {code} = await getJob()
+await page.getByRole('heading', {name:'Verificação em duas etapas'}).waitFor({timeout:2000}) //vai ter até 3 segundo para ir pro proximo passo
 
-await loginPage.informar2FA(code)
+const codigo = await getJob()
+
+//const code = await obterCodigo2FA(usuario.cpf)// banco de dados
+
+await loginPage.informar2FA(codigo)
 
 await expect(dashPage.obterSaldo()).toHaveText('R$ 5.000,00');
  
