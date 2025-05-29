@@ -1,8 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'mcr.microsoft.com/playwright:v1.52.0-noble'
+            args '--network playwrigth-e2e-tests_skynet'
+        }
+    }
 
     stages {
-        stage('node.js Deps') {
+        stage('Node.js Deps') {
             steps {
                 sh'npm install'
             }
