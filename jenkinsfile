@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             // Certifique-se de que esta é a versão correta da imagem que você quer usar
-            image 'mcr.microsoft.com/playwright:v1.52.0-noble'
+            image 'papitodev/playwrigth-nj-v1.49.1-noble'
             // A rede 'playwrigth-e2e-tests_skynet' está correta se o nome do seu diretório docker-compose for 'playwrigth-e2e-tests'
             args '--network playwrigth-e2e-tests_skynet'
             // Opcional: Adicionar um argumento para dar mais tempo para o Docker iniciar o contêiner
