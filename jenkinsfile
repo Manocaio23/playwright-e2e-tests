@@ -6,20 +6,42 @@ pipeline {
         }
     }
 
+    options {
+        timeout(time: 5, unit: 'MINUTES') // ⏱️ evita builds travados por muito tempo
+    }
+
     stages {
-        stage('Node.js Deps') {
+        stage('Instalar dependências') {
             steps {
-                sh'npm install'
+                sh 'npm ci' // ✅ Mais rápido e confiável que `npm install` em pipelines
             }
         }
 
-        stage('E2E Tests') {
+        stage('Executar testes E2E') {
             steps {
                 sh 'npx playwright test'
             }
         }
 
+        stage('Debug (se falhar)') {
+            when {
+                expression { currentBuild.result == 'FAILURE' }
+            }
+            steps {
+                sh 'ls -la && pwd && node -v && npm -v'
+            }
+        }
+    }
 
-       
+    post {
+        always {
+            echo 'Finalizando pipeline'
+        }
+        success {
+            echo '✅ Pipeline concluída com sucesso!'
+        }
+        failure {
+            echo '❌ Falha na pipeline, revise os testes.'
+        }
     }
 }
