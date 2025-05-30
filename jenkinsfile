@@ -1,22 +1,46 @@
 pipeline {
-    agent {
-        docker {
-            image 'mcr.microsoft.com/playwright:v1.50.1-noble'
-            args '--network skynet'
-        }
+    agent any
+
+    environment {
+        PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.50.1-noble'
+        DOCKER_NETWORK = 'skynet'
+    }
+
+    options {
+        timeout(time: 10, unit: 'MINUTES') // evita travamento eterno
     }
 
     stages {
-        stage('Node.js Deps') {
+        stage('Instalar dependências') {
             steps {
-                sh 'npm install'
+                script {
+                    docker.image(env.PLAYWRIGHT_IMAGE).inside("--network ${env.DOCKER_NETWORK}") {
+                        sh 'npm ci'
+                    }
+                }
             }
         }
 
-        stage('E2E Tests') {
+        stage('Executar testes E2E') {
             steps {
-                sh 'npx playwright test'
+                script {
+                    docker.image(env.PLAYWRIGHT_IMAGE).inside("--network ${env.DOCKER_NETWORK}") {
+                        sh 'npx playwright test'
+                    }
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            echo '🧹 Pipeline finalizada.'
+        }
+        success {
+            echo '✅ Testes E2E executados com sucesso!'
+        }
+        failure {
+            echo '❌ Algo deu errado durante os testes.'
         }
     }
 }
