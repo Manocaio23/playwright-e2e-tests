@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'mcr.microsoft.com/playwright:v1.50.1-noble'
-            args '--network playwrigth-e2e-tests_skynet'
+            args '--network skynet'
         }
     }
 
