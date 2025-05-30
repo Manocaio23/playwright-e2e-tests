@@ -1,46 +1,64 @@
 pipeline {
-    agent any
-
-    environment {
-        PLAYWRIGHT_IMAGE = 'mcr.microsoft.com/playwright:v1.50.1-noble'
-        DOCKER_NETWORK = 'skynet'
+    agent {
+        docker {
+            // Certifique-se de que esta é a versão correta da imagem que você quer usar
+            image 'mcr.microsoft.com/playwright:v1.52.0-noble'
+            // A rede 'playwrigth-e2e-tests_skynet' está correta se o nome do seu diretório docker-compose for 'playwrigth-e2e-tests'
+            args '--network playwrigth-e2e-tests_skynet'
+            // Opcional: Adicionar um argumento para dar mais tempo para o Docker iniciar o contêiner
+            // args '--init' // Garante que processos sejam encerrados corretamente
+        }
     }
 
+    // Configurações globais do pipeline, como timeout
     options {
-        timeout(time: 10, unit: 'MINUTES') // evita travamento eterno
+        // Define um timeout de 30 minutos para o pipeline inteiro
+        // Isso dá tempo extra para o download da imagem e a execução dos testes
+        timeout(time: 30, unit: 'MINUTES')
+        // Adiciona um timestamp nas saídas do log, útil para depuração
+        timestamps()
     }
 
     stages {
-        stage('Instalar dependências') {
+        stage('Checkout SCM') {
             steps {
+                // O checkout do código-fonte é feito automaticamente pelo Jenkins no início do pipeline
+                // Mas podemos forçar para ter certeza ou adicionar configurações específicas se necessário
+                // Por padrão, o Jenkins já faz um "checkout scm" nessa fase implícita.
+                // Para clareza, você pode deixar esta stage vazia ou remover se preferir a ação automática.
                 script {
-                    docker.image(env.PLAYWRIGHT_IMAGE).inside("--network ${env.DOCKER_NETWORK}") {
-                        sh 'npm ci'
-                    }
+                    echo 'Realizando checkout do repositório Git...'
+                    // Não é necessário um 'checkout scm' explícito aqui,
+                    // pois o Jenkins já faz isso no início do pipeline.
                 }
             }
         }
 
-        stage('Executar testes E2E') {
+        stage('Instalar Dependências Node.js') {
             steps {
-                script {
-                    docker.image(env.PLAYWRIGHT_IMAGE).inside("--network ${env.DOCKER_NETWORK}") {
-                        sh 'npx playwright test'
-                    }
-                }
+                sh 'npm install'
+            }
+        }
+
+        stage('Executar Testes E2E') {
+            steps {
+                sh 'npx playwright test'
             }
         }
     }
 
+    // Ações pós-pipeline, como limpeza
     post {
         always {
-            echo '🧹 Pipeline finalizada.'
-        }
-        success {
-            echo '✅ Testes E2E executados com sucesso!'
+            // Opcional: Limpar o workspace após a execução do pipeline
+            // Isso pode ser útil para evitar problemas de cache entre execuções
+            deleteDir()
         }
         failure {
-            echo '❌ Algo deu errado durante os testes.'
+            echo 'Pipeline falhou. Verifique os logs para mais detalhes.'
+        }
+        success {
+            echo 'Pipeline executado com sucesso!'
         }
     }
 }
