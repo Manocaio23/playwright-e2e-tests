@@ -19,6 +19,6 @@ export const getJob = async () => {
 }
 
 export const cleanJobs = async () => {
-    await queue.obliterate() //apaga tudo
+    await queue.obliterate({force:true}) //apaga tudo a todo custo
 
 }
